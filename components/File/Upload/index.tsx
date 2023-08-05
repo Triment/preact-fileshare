@@ -3,7 +3,7 @@ import { ComponentProps } from "preact";
 export default function UploadFile(props: ComponentProps<'input'>) {
   return (
     <div className="flex bg-grey-lighter">
-      <label className="switch w-auto md:w-64 flex flex-col items-center px-4 py-6 bg-white text-blue rounded-lg hover:shadow-lg tracking-wide uppercase border border-blue cursor-pointer hover:bg-blue hover:text-blue-500">
+      <label className="switch w-auto md:w-64 flex flex-col items-center px-4 py-6 bg-white dark:bg-gray-700 dark:text-white text-blue rounded-lg hover:shadow-lg tracking-wide uppercase border border-blue cursor-pointer hover:bg-blue hover:text-blue-500">
         <svg
           className="w-8 h-8"
           fill="currentColor"
