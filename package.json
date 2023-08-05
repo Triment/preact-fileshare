@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "js-file-download": "^0.4.12",
     "peerjs": "^1.4.7",
     "preact": "^10.16.0",
     "preact-router": "^4.1.2"

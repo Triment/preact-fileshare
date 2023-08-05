@@ -1,7 +1,21 @@
+import download from "js-file-download";
+import Peer, { DataConnection } from "peerjs";
 import { useEffect, useState } from "preact/hooks";
 import UploadFile from "../components/File/Upload";
 import "./app.css";
-import Peer, { DataConnection } from "peerjs";
+
+export enum DataType {
+  FILE = "FILE",
+  OTHER = "OTHER",
+}
+
+export interface Data {
+  dataType: DataType;
+  file?: Blob;
+  fileName?: string;
+  fileType?: string;
+  message?: string;
+}
 
 export function FileShare({ path, id }: { path: string; id?: string }) {
   const [peer, setPeer] = useState<Peer>();
@@ -25,8 +39,17 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
       setRemoteConn(dataConn);
 
       dataConn.on("open", () => {
-        dataConn.on("data", (data) => {
-          console.log(data);
+        dataConn.on("data", (data: any) => {
+          console.log(typeof data);
+          if (data.dataType === DataType.FILE) {
+            download(
+              data.file || "",
+              data.fileName || "fileName",
+              data.fileType
+            );
+          } else {
+            console.log(data);
+          }
         });
         dataConn.send("hello friend");
       });
@@ -46,9 +69,9 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
     setRemoteConn(conn);
   };
 
-  const sendFile = (file: File)=>{
-    remoteConn?.send(file)
-  }
+  const sendFile = (file: Data) => {
+    remoteConn?.send(file);
+  };
   return (
     <main className="w-full h-full flex flex-col items-center justify-center">
       <div className="w-full rounded-lg bg-white shadow dark:border dark:border-gray-700 dark:bg-gray-800 sm:max-w-md md:mt-0 p-3">
@@ -75,7 +98,13 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
       </div>
       <UploadFile
         onChange={({ currentTarget: { files } }) => {
-          remoteConn && sendFile(files![0]);
+          remoteConn &&
+            sendFile({
+              dataType: DataType.FILE,
+              file: files![0],
+              fileName: files![0].name,
+              fileType: files![0].type,
+            });
         }}
       />
       {id}
