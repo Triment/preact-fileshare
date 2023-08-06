@@ -1,11 +1,15 @@
-import { render } from 'preact'
-import './index.css'
-import Router from 'preact-router'
-import { FileShare } from './FileShare';
+import './index.css';
+import Router from 'preact-router';
+import Home from './Home';
+import Layout from './Layout';
 
-const Main = () => (
-  <Router>
-    <FileShare path="/fileshare/:id?" />
-  </Router>
+export const Main = ({url}:{url?:string}) => (
+  <Layout>
+    <Router url={url}>
+      <Home path="/" />
+      {/* <FileShare path="/fileshare/:id?"  /> */}
+    </Router>
+  </Layout>
+  
 );
-render(<Main/>, document.getElementById('app')!)
+// render(<Main/>, document.getElementById('app')!)
