@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { ViteDevServer, createServer as createViteServer } from "vite";
+import { ExpressPeerServer } from 'peer'
 import { getCssUrls } from "./getSSRCssUrls.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -10,7 +11,7 @@ const isProduction = process.env.NODE_ENV === 'production'
 
 async function createServer() {
   const app = express();
-
+  
   let vite:ViteDevServer | null
   console.log(isProduction, __dirname)
   if (isProduction) {
@@ -33,6 +34,13 @@ async function createServer() {
   }
   
 
+  
+
+  const server = app.listen(5173);
+  const peerServer = ExpressPeerServer(server, {
+    path: "/peer",
+  });
+  app.use(peerServer)
   app.use("*", async (req, res, next) => {
     // 服务 index.html - 下面我们来处理这个问题
     const url = req.originalUrl;
@@ -90,8 +98,6 @@ async function createServer() {
     }
     
   });
-
-  app.listen(5173);
 }
 
 createServer();

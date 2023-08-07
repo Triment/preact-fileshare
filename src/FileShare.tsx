@@ -33,8 +33,9 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
   useEffect(() => {
     import('peerjs').then(({ Peer })=>{
       const peer = new Peer({
-        host: "nmmm.top",
-        secure: true,
+        host: "/",
+        port: 5173,
+        path: '/peer'
       });
       setPeer(peer);
   
