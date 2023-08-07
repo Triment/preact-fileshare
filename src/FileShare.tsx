@@ -1,5 +1,7 @@
+'use client';
+
 import download from "js-file-download";
-import Peer, { DataConnection } from "peerjs";
+import { Peer, type DataConnection } from "peerjs";
 import { useEffect, useState } from "preact/hooks";
 import UploadFile from "../components/File/Upload";
 import "./app.css";
@@ -26,36 +28,38 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
   const [remoteID, setRemoteID] = useState("");
   const [localID, setLocalID] = useState("");
 
-  const [file, setFile] = useState<File>();
 
   const [remoteConn, setRemoteConn] = useState<DataConnection>();
   useEffect(() => {
+    import('peerjs').then(({ Peer })=>{
+      const peer = new Peer({
+        host: "nmmm.top",
+        secure: true,
+      });
+      setPeer(peer);
+  
+      /** get id from peer js server */
+      peer.on("open", (peerID) => {
+        setConnectState(prev=>prev|1); //set last bit to 1
+        setLocalID(peerID);
+        if(id){
+          console.log('id existed')
+          connectRemote(peer, id);
+        }
+      });
+  
+      /** deal with incoming data connection */
+      peer.on("connection", (dataConn) => {
+        setConnectState(prev=>prev|4)
+        console.log(`connect from ${dataConn.peer}`);
+        setRemoteConn(dataConn);
+        handleData(dataConn)     
+      });
+    })
     if(id){
       setRemoteID(id);
     }
-    const peer = new Peer({
-      host: "nmmm.top",
-      secure: true,
-    });
-    setPeer(peer);
-
-    /** get id from peer js server */
-    peer.on("open", (peerID) => {
-      setConnectState(prev=>prev|1); //set last bit to 1
-      setLocalID(peerID);
-      if(id){
-        console.log('id existed')
-        connectRemote(peer, id);
-      }
-    });
-
-    /** deal with incoming data connection */
-    peer.on("connection", (dataConn) => {
-      setConnectState(prev=>prev|4)
-      console.log(`connect from ${dataConn.peer}`);
-      setRemoteConn(dataConn);
-      handleData(dataConn)     
-    });
+    
     
   }, [id]);
 
@@ -114,7 +118,7 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
         </div>
         <div>
         <span className="font-bold text-green-500">远程链接:</span>
-        <p className="mx-2 text-orange-500 inline-block">{id ? new URL(localID,window.location.href).toString(): window.location.href + `/${localID}` }</p>
+        <p className="mx-2 text-orange-500 inline-block">{id ? new URL(localID,path).toString(): path + `/${localID}` }</p>
         </div>
         <div className="w-full flex flex-row items-center">
           <span className="font-bold text-center text-green-500">

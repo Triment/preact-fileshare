@@ -8,10 +8,10 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    // "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
+    // "noEmit": true,
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
 
@@ -19,8 +19,21 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "esModuleInterop":true,
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "./dist",
   },
-  "include": ["src", "components"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "components", "render", "./**/*.ts" ],
+  "exclude": ["*config.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }],
+  "ts-node": {
+    "esm": true,
+    "experimentalResolver": true,
+    "transpileOnly": true,
+    "esModuleInterop": false,
+    "compilerOptions": {
+      "module": "ES6",
+      "esModuleInterop": true
+    }
+  }
 }
