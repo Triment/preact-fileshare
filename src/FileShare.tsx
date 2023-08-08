@@ -19,7 +19,7 @@ export interface Data {
   message?: string;
 }
 
-export function FileShare({ path, id, url }: { path: string; id?: string, url?: string }) {
+export function FileShare({  id, url }: { path: string; id?: string, url?: string }) {
   const [connectState, setConnectState] = useState(0)
 
   const [peer, setPeer] = useState<Peer>();
