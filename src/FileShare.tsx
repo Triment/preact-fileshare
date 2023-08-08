@@ -33,7 +33,7 @@ export function FileShare({ path, id, url }: { path: string; id?: string, url?: 
     import('peerjs').then(({ Peer })=>{
       const peer = new Peer({
         host: "/",
-        port: 5173,
+        secure: true,
         path: '/peer'
       });
       setPeer(peer);
