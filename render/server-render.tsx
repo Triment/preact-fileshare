@@ -1,5 +1,6 @@
 import renderToString from "preact-render-to-string";
 import { Main } from '../src/main'
-export function render(url: string){
-    return renderToString(<Main url={url} />)
+import { PageContextProvider } from "./PageContext";
+export function render(url: string, initState: any){
+    return renderToString(<PageContextProvider pageContext={initState} ><Main url={url} /></PageContextProvider>)
 }

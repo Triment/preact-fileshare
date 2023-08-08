@@ -1,9 +1,9 @@
 import express from "express";
 import fs from "fs";
 import path from "path";
+import { ExpressPeerServer } from 'peer';
 import { fileURLToPath } from "url";
 import { ViteDevServer, createServer as createViteServer } from "vite";
-import { ExpressPeerServer } from 'peer'
 import { getCssUrls } from "./getSSRCssUrls.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -13,7 +13,6 @@ async function createServer() {
   const app = express();
   
   let vite:ViteDevServer | null
-  console.log(isProduction, __dirname)
   if (isProduction) {
     app.use(express.static(`${__dirname}/client`))
   } else {
@@ -38,7 +37,12 @@ async function createServer() {
 
   const server = app.listen(5173);
   const peerServer = ExpressPeerServer(server, {
+    generateClientId: () =>{
+      const id = (Math.random().toString(36) + "0000000000000000000").substr(2, 6)
+      return id
+  },
     path: "/peer",
+    proxied: true
   });
   app.use(peerServer)
   app.use("*", async (req, res, next) => {
@@ -66,7 +70,7 @@ async function createServer() {
       //    函数调用了适当的 SSR 框架 API。
       //    例如 ReactDOMServer.renderToString()
       // css注入方案 https://github.com/vitejs/vite/issues/2013#issuecomment-786804302
-      const appHtml = await render(url);
+      const appHtml = await render(url,{});
       const mod = await vite.moduleGraph.getModuleByUrl(
         "/src/main.tsx"
       ); /* replace with your entry */
@@ -92,7 +96,7 @@ async function createServer() {
       next(e);
     }else {
       const { render } = await import(path.join(__dirname, 'server/server-render.js'))
-      const appHtml = await render(url)
+      const appHtml = await render(url,{})
       const html = fs.readFileSync(path.join(__dirname, "client/index.html"), { encoding: 'utf-8'}).replace(`<!--ssr-outlet-->`, appHtml)
       res.status(200).set({ "Content-Type": "text/html" }).end(html)
     }

@@ -19,8 +19,7 @@ export interface Data {
   message?: string;
 }
 
-export function FileShare({ path, id }: { path: string; id?: string }) {
-
+export function FileShare({ path, id, url }: { path: string; id?: string, url?: string }) {
   const [connectState, setConnectState] = useState(0)
 
   const [peer, setPeer] = useState<Peer>();
@@ -67,20 +66,31 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
   const handleData = (dataConn: DataConnection)=>{
     dataConn.on("open", () => {
       dataConn.on("data", (data: any) => {
+        console.log(data)
         setConnectState(prev=>prev|8)
-        console.log(typeof data);
         if (data.dataType === DataType.FILE) {
           download(
             data.file || "",
             data.fileName || "fileName",
             data.fileType
           );
+          dataConn.send({
+            dataType: DataType.OTHER,
+            action: 'ack'
+          })
         } else {
+          if(data.dataType === DataType.OTHER) {
+            if (data.action === 'close') closeRemote(dataConn);
+            if (data.action === 'ack') console.log(`文件传输完毕`);
+          } 
           console.log(data);
         }
       });
       dataConn.send("hello friend");
     });
+    dataConn.on('close', ()=>{
+      closeRemote(dataConn)
+    })
   }
   /**
    * connect remote peer
@@ -92,14 +102,24 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
       handleData(conn);
     });
     setRemoteConn(conn);
+    conn.on('close', ()=>{
+      closeRemote(conn)
+    })
   };
   /**
    * close remote connection
    */
-  const closeRemote = ()=>{
-    remoteConn?.close();
+  const closeRemote = (dataConn: DataConnection)=>{
+    dataConn.send({
+      dataType: DataType.OTHER,
+      action: 'close'
+    })
+    dataConn?.close();
     if(connectState & 2){
       setConnectState(connectState-2)
+    }
+    if(connectState & 4){
+      setConnectState(connectState-4)
     }
   }
   /** send file to remote connection */
@@ -110,8 +130,8 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
     <main className="w-full h-full flex flex-col items-center justify-center dark:bg-black">
       { (connectState & 1) === 1 && <p className="text-red-600">初始化</p>}
       { (connectState & 2) === 2 && <p className="text-red-600">发送远程连接</p>}
-      { (connectState & 4) === 4 && <p className="text-red-600">被连接</p>}
-      { (connectState & 8) === 8 && <p className="text-red-600">数据接受</p>}
+      { (connectState & 4) === 4 && <p className="text-green-600">被连接</p>}
+      { (connectState & 8) === 8 && <p className="text-green-600">数据接受</p>}
       <div className="my-2 w-full rounded-lg bg-slate-200 shadow dark:border dark:border-gray-700 dark:bg-gray-800 sm:max-w-md md:mt-0 p-3">
         <div>
           <span className="font-bold text-green-500">本机识别码:</span>
@@ -119,7 +139,7 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
         </div>
         <div>
         <span className="font-bold text-green-500">远程链接:</span>
-        <p className="mx-2 text-orange-500 inline-block">{id ? new URL(localID,path).toString(): path + `/${localID}` }</p>
+        <p className="mx-2 text-orange-500 inline-block">{id ? new URL(localID, `https://nmmm.top${url}`).toString(): `https://nmmm.top/fileshare/${localID}` }</p>
         </div>
         <div className="w-full flex flex-row items-center">
           <span className="font-bold text-center text-green-500">
@@ -132,14 +152,14 @@ export function FileShare({ path, id }: { path: string; id?: string }) {
           />
         </div>
         { remoteID && !id && <p>点击连接开始与{remoteID}交换文件</p>}
-        { peer && <button
+        { peer && (connectState & 2) !== 2 && (connectState & 4) !== 4 && <button
           onClick={()=>connectRemote(peer!, remoteID)}
           className="switch w-full rounded-lg bg-green-400 px-5 py-2.5 text-center text-sm font-medium text-white hover:border-green-300 hover:bg-green-500 focus:ring-2 focus:ring-green-300"
         >
           连接
         </button>}
-        { (connectState & 2) === 2 && <button
-          onClick={closeRemote}
+        { ((connectState & 2) === 2 || (connectState & 4) === 4) && <button
+          onClick={()=>closeRemote(remoteConn!)}
           className="my-2 switch w-full rounded-lg bg-red-400 px-5 py-2.5 text-center text-sm font-medium text-white hover:border-red-300 hover:bg-red-500 focus:ring-2 focus:ring-red-300"
         >
           断开
