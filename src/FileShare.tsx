@@ -125,6 +125,7 @@ export function FileShare({  id, url }: { path: string; id?: string, url?: strin
   /** send file to remote connection */
   const sendFile = (file: Data) => {
     remoteConn?.send(file);
+    remoteConn?.dataChannel.onbufferedamountlow
   };
   return (
     <main className="w-full h-full flex flex-col items-center justify-center dark:bg-black">
