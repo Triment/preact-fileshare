@@ -14,7 +14,7 @@ async function createServer() {
   
   let vite:ViteDevServer | null
   if (isProduction) {
-    app.use(express.static(`${__dirname}/client`))
+    app.use('/assets', express.static(`${__dirname}/client/assets`))
   } else {
     // 以中间件模式创建 Vite 应用，并将 appType 配置为 'custom'
     // 这将禁用 Vite 自身的 HTML 服务逻辑
@@ -98,7 +98,6 @@ async function createServer() {
     } else {
       const { render } = await import(path.join(__dirname, 'server/server-render.js'))
       const appHtml = await render(url,{})
-      console.log(appHtml)
       const html = fs.readFileSync(path.join(__dirname, "client/index.html"), { encoding: 'utf-8'}).replace(`<!--ssr-outlet-->`, appHtml)
       res.status(200).set({ "Content-Type": "text/html" }).end(html)
     }
