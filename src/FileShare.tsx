@@ -32,7 +32,7 @@ export function FileShare({  id, url }: { path: string; id?: string, url?: strin
   useEffect(() => {
     import('peerjs').then(({ Peer })=>{
       const peer = new Peer({
-        host: "/",
+        host: "nmmm.top",
         secure: true,
         path: '/peer'
       });
